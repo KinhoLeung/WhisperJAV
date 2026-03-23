@@ -440,7 +440,7 @@ For the full walkthrough including Colab/Kaggle setup, headless servers, and sys
 
 Two notebooks are maintained:
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/meizhong986/WhisperJAV/blob/main/notebook/WhisperJAV_colab_edition_expert.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/KinhoLeung/WhisperJAV/blob/main/notebook/WhisperJAV_colab_edition_expert.ipynb)
 [![Open In Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://kaggle.com/kernels/welcome?src=https://github.com/meizhong986/WhisperJAV/blob/main/notebook/WhisperJAV_kaggle_parallel_edition.ipynb)
 
 If you run into issues, please open a [GitHub issue](https://github.com/meizhong986/WhisperJAV/issues) with your system info, the console log, and the error output.
