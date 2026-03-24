@@ -209,8 +209,7 @@ class SileroSpeechSegmenter:
                 repo_or_dir=self.repo,
                 model="silero_vad",
                 force_reload=not is_cached,
-                onnx=False,
-                trust_repo=True
+                onnx=False
             )
             (self._get_speech_timestamps, _, _, _, _) = self._utils
 
