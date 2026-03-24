@@ -226,8 +226,7 @@ class StableTSASR:
                 repo_or_dir=self.vad_repo,  # Config-driven, not hardcoded
                 model="silero_vad",
                 force_reload=not is_cached,  # Use cache if available
-                onnx=False,
-                trust_repo=True
+                onnx=False
             )
             self._vad_precached = True
             status = "from cache" if is_cached else "downloaded"

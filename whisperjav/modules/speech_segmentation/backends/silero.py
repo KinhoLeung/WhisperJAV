@@ -218,16 +218,7 @@ class SileroSpeechSegmenter:
             logger.debug(f"Silero VAD loaded ({status}) from {self.repo}")
         except Exception as e:
             logger.error(f"Failed to load Silero VAD model: {e}", exc_info=True)
-            if "EOF when reading a line" in str(e):
-                logger.error(
-                    "TRICKY ERROR DETECTED: Silero VAD was trying to ask for your permission to trust the repository, "
-                    "but failed because of a non-interactive environment (Colab). "
-                    "Double check that trust_repo=True is passed and that your code is up-to-date."
-                )
-            raise ImportError(
-                f"Failed to load Silero VAD ({self.repo}): {e}. "
-                "Try deleting ~/.cache/torch/hub and re-running."
-            )
+            raise ImportError(f"Failed to load Silero VAD: {e}")
 
     def segment(
         self,
