@@ -33,22 +33,6 @@ warnings.filterwarnings("ignore", message=".*chunk_length_s.*is very experimenta
 warnings.filterwarnings("ignore", message=".*sparse_softmax_cross_entropy.*deprecated.*")
 # requests warns about urllib3/chardet versions — cosmetic, not a real problem
 warnings.filterwarnings("ignore", message=r".*urllib3.*or chardet.*doesn't match a supported version")
-
-# --- GLOBAL MONKEYPATCH FOR TORCH HUB ---
-# This ensures that even internal calls within dependencies (like stable-ts or Silero VAD backends)
-# will trust the repository without blocking for user input in non-interactive environments (Colab/Kaggle).
-try:
-    import torch
-    if hasattr(torch, 'hub'):
-        _original_hub_load = torch.hub.load
-        def _patched_hub_load(*args, **kwargs):
-            if 'trust_repo' not in kwargs:
-                kwargs['trust_repo'] = True
-            return _original_hub_load(*args, **kwargs)
-        torch.hub.load = _patched_hub_load
-except (ImportError, AttributeError):
-    pass  # Torch not installed or hub not available, skip patch
-# ----------------------------------------
 # ===========================================================================
 
 import argparse
