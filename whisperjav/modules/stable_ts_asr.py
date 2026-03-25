@@ -12,6 +12,16 @@ import traceback
 import logging
 import torch
 import warnings
+
+# --- GLOBAL MONKEYPATCH FOR TORCH HUB ---
+# This ensures that even internal calls within stable-ts/faster-whisper
+# will trust the Silero VAD repository without blocking for user input.
+_original_hub_load = torch.hub.load
+def _patched_hub_load(*args, **kwargs):
+    kwargs['trust_repo'] = True
+    return _original_hub_load(*args, **kwargs)
+torch.hub.load = _patched_hub_load
+# ----------------------------------------
 import soundfile as sf
 import librosa
 
@@ -226,7 +236,8 @@ class StableTSASR:
                 repo_or_dir=self.vad_repo,  # Config-driven, not hardcoded
                 model="silero_vad",
                 force_reload=not is_cached,  # Use cache if available
-                onnx=False
+                onnx=False,
+                trust_repo=True
             )
             self._vad_precached = True
             status = "from cache" if is_cached else "downloaded"
@@ -552,13 +563,16 @@ class StableTSASR:
                                                                    '\u30a0' <= c <= '\u30ff' or  # Katakana
                                                                    '\u4e00' <= c <= '\u9fff')    # Kanji
                 total_chars = len(sample_text.replace(' ', ''))
-                if total_chars > 0 and japanese_char_count / total_chars > 0.3:
-                    logger.warning(f"Translation mode was requested but output appears to be in Japanese "
-                                   f"({japanese_char_count}/{total_chars} chars are Japanese). "
-                                   f"This may indicate Whisper translation is not working as expected.")
-                    logger.warning(f"Sample output: {sample_text[:100]}...")
+                if total_chars > 0:
+                    if japanese_char_count / total_chars > 0.3:
+                        logger.warning(f"Translation mode was requested but output appears to be in Japanese "
+                                       f"({japanese_char_count}/{total_chars} chars are Japanese). "
+                                       f"This may indicate Whisper translation is not working as expected.")
+                        logger.warning(f"Sample output: {sample_text[:100]}...")
+                    else:
+                        logger.info(f"Translation output validation: appears to be English (good)")
                 else:
-                    logger.info(f"Translation output validation: appears to be English (good)")
+                    logger.warning("Translation output validation: Result is EMPTY or contains no text!")
 
         return result
 

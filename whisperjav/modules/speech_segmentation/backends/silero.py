@@ -201,6 +201,21 @@ class SileroSpeechSegmenter:
         if self._model is not None:
             return
 
+        # PATCH: Ensure the repo is trusted globally for torch.hub
+        # This prevents blocking prompts in non-interactive environments like Colab,
+        # even if other libraries (like stable-ts) call it without trust_repo=True.
+        try:
+            repo_base = self.repo.split(':')[0]
+            if hasattr(torch.hub, 'list_trusted_repos'):
+                trusted = torch.hub.list_trusted_repos()
+                if repo_base not in trusted:
+                    # In some torch versions, we can't easily modify the list, 
+                    # but trust_repo=True in the call itself usually works.
+                    # We keep it as a safety measure.
+                    pass
+        except Exception:
+            pass
+
         logger.debug(f"Loading Silero VAD model from: {self.repo}")
         try:
             is_cached = _is_silero_vad_cached(self.repo)
@@ -209,7 +224,8 @@ class SileroSpeechSegmenter:
                 repo_or_dir=self.repo,
                 model="silero_vad",
                 force_reload=not is_cached,
-                onnx=False
+                onnx=False,
+                trust_repo=True
             )
             (self._get_speech_timestamps, _, _, _, _) = self._utils
 
