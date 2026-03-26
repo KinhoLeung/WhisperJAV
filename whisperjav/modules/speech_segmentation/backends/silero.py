@@ -197,66 +197,24 @@ class SileroSpeechSegmenter:
         return f"Silero VAD {self.version}"
 
     def _ensure_model(self) -> None:
-        """Load VAD model if not already loaded using a local-clone strategy
-        to bypass torch.hub's trust prompt.
-        """
+        """Load VAD model if not already loaded."""
         if self._model is not None:
             return
 
-        import subprocess
-        hub_dir = Path(torch.hub.get_dir())
-        
-        # 1. Parse repository and version
-        if ':' in self.repo:
-            repo_name, version = self.repo.rsplit(':', 1)
-        else:
-            repo_name = self.repo
-            version = 'master'
-            
-        repo_safe = repo_name.replace('/', '_')
-        local_repo_path = hub_dir / f"{repo_safe}_local_{version}"
-        
-        # 2. Try to clone if not exists
-        if not local_repo_path.exists():
-            logger.info(f"Cloning {self.repo} to {local_repo_path} to avoid trust prompts...")
-            try:
-                hub_dir.mkdir(parents=True, exist_ok=True)
-                git_url = f"https://github.com/{repo_name}.git"
-                subprocess.run(
-                    ["git", "clone", "--depth", "1", "--branch", version, git_url, str(local_repo_path)],
-                    check=True,
-                    capture_output=True,
-                    text=True
-                )
-                logger.debug(f"Successfully cloned Silero VAD {version}")
-            except Exception as e:
-                logger.warning(f"Failed to clone Silero VAD locally: {e}. Falling back to standard Hub load.")
-
-        # 3. Load model
+        logger.debug(f"Loading Silero VAD model from: {self.repo}")
         try:
-            # Use local loader if possible (bypasses ALL trust checks)
-            if local_repo_path.exists():
-                logger.debug(f"Loading Silero VAD from local source: {local_repo_path}")
-                self._model, self._utils = torch.hub.load(
-                    repo_or_dir=str(local_repo_path),
-                    model="silero_vad",
-                    source="local",
-                    onnx=False,
-                    verbose=False
-                )
-            else:
-                # Fallback to remote load if local cloning failed
-                logger.debug(f"Falling back to remote torch.hub.load for {self.repo}")
-                self._model, self._utils = torch.hub.load(
-                    repo_or_dir=self.repo,
-                    model="silero_vad",
-                    source="github",
-                    onnx=False,
-                    trust_repo=True
-                )
-                
+            is_cached = _is_silero_vad_cached(self.repo)
+
+            self._model, self._utils = torch.hub.load(
+                repo_or_dir=self.repo,
+                model="silero_vad",
+                force_reload=not is_cached,
+                onnx=False
+            )
             (self._get_speech_timestamps, _, _, _, _) = self._utils
-            logger.debug(f"Silero VAD {version} loaded successfully")
+
+            status = "from cache" if is_cached else "downloaded"
+            logger.debug(f"Silero VAD loaded ({status}) from {self.repo}")
         except Exception as e:
             logger.error(f"Failed to load Silero VAD model: {e}", exc_info=True)
             raise ImportError(f"Failed to load Silero VAD: {e}")
