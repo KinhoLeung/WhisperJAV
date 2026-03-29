@@ -13,6 +13,7 @@ import numpy as np
 import torch
 
 from ..base import SpeechSegment, SegmentationResult
+from whisperjav.utils.torch_fix import apply_torch_hub_fix, get_silero_vad_local_path
 
 logger = logging.getLogger("whisperjav")
 
@@ -110,6 +111,7 @@ class SileroSpeechSegmenter:
         max_speech_duration_s: Optional[float] = None,
         start_pad_samples: int = 11200,
         end_pad_samples: int = 20800,
+        local_path: Optional[str] = None,
         **kwargs
     ):
         """
@@ -183,6 +185,9 @@ class SileroSpeechSegmenter:
         self.start_pad_samples = int(start_pad_samples)
         self.end_pad_samples = int(end_pad_samples)
 
+        # Store local path if provided
+        self.local_path = local_path
+
         # Lazy-loaded model
         self._model = None
         self._utils = None
@@ -201,23 +206,41 @@ class SileroSpeechSegmenter:
         if self._model is not None:
             return
 
-        logger.debug(f"Loading Silero VAD model from: {self.repo}")
-        try:
-            is_cached = _is_silero_vad_cached(self.repo)
+        # Always apply the trust patch as a safety measure for torch.hub.load
+        apply_torch_hub_fix()
 
-            self._model, self._utils = torch.hub.load(
-                repo_or_dir=self.repo,
-                model="silero_vad",
-                force_reload=not is_cached,
-                onnx=False
-            )
+        # Determine loading source: local path vs GitHub repo
+        # Resolved via priority: 1. constructor param, 2. env var, 3. default GitHub repo
+        effective_local_path = get_silero_vad_local_path(self.local_path)
+        
+        load_source = "local" if effective_local_path else "github"
+        repo_or_dir = effective_local_path if effective_local_path else self.repo
+
+        logger.debug(f"Loading Silero VAD model ({load_source}) from: {repo_or_dir}")
+        try:
+            # Check cache status only if loading from GitHub (source='github' is implicit default)
+            is_cached = _is_silero_vad_cached(repo_or_dir) if load_source == "github" else True
+
+            # Use source='local' if we have a resolved local path
+            load_kwargs = {
+                "repo_or_dir": repo_or_dir,
+                "model": "silero_vad",
+                "force_reload": not is_cached if load_source == "github" else False,
+                "onnx": False
+            }
+            
+            if load_source == "local":
+                load_kwargs["source"] = "local"
+                logger.info(f"Using local Silero VAD repository: {repo_or_dir}")
+
+            self._model, self._utils = torch.hub.load(**load_kwargs)
             (self._get_speech_timestamps, _, _, _, _) = self._utils
 
-            status = "from cache" if is_cached else "downloaded"
-            logger.debug(f"Silero VAD loaded ({status}) from {self.repo}")
+            status = "from directory" if load_source == "local" else ("from cache" if is_cached else "downloaded")
+            logger.debug(f"Silero VAD loaded ({status}) from {repo_or_dir}")
         except Exception as e:
-            logger.error(f"Failed to load Silero VAD model: {e}", exc_info=True)
-            raise ImportError(f"Failed to load Silero VAD: {e}")
+            logger.error(f"Failed to load Silero VAD model ({load_source}): {e}", exc_info=True)
+            raise ImportError(f"Failed to load Silero VAD ({load_source}): {e}")
 
     def segment(
         self,

@@ -24,6 +24,7 @@ from whisperjav.utils.logger import logger
 from whisperjav.utils.device_detector import get_best_device
 from whisperjav.modules.japanese_postprocessor import JapanesePostProcessor
 from contextlib import contextmanager, redirect_stdout, redirect_stderr
+from whisperjav.utils.torch_fix import apply_torch_hub_fix, get_silero_vad_local_path
 
 # Suppress specific warnings from stable_whisper
 warnings.filterwarnings("ignore", message="Cannot clamp due to missing/no word-timestamps")
@@ -182,6 +183,9 @@ class StableTSASR:
             self.vad_repo = "snakers4/silero-vad" if turbo_mode else "snakers4/silero-vad:v4.0"
             logger.warning(f"VAD repo not found in config, using fallback: {self.vad_repo}")
 
+        # Extract local path for VAD if provided
+        self.vad_local_path = self.provider_params.get("local_path", None)
+
         # Extract stable-ts specific options if provided
         self.stable_ts_options = params.get("stable_ts", {})
         
@@ -214,25 +218,39 @@ class StableTSASR:
             logger.debug("VAD already pre-cached for this instance")
             return
 
-        # Use repo from config (resolved by TranscriptionTuner, or fallback from __init__)
-        logger.debug(f"Pre-caching Silero VAD: {self.vad_repo}")
+        # Always apply the trust patch as a safety measure
+        apply_torch_hub_fix()
+
+        # Resolve loading source: local vs github
+        effective_local_path = get_silero_vad_local_path(self.vad_local_path)
+        load_source = "local" if effective_local_path else "github"
+        repo_or_dir = effective_local_path if effective_local_path else self.vad_repo
+
+        logger.debug(f"Pre-caching Silero VAD ({load_source}): {repo_or_dir}")
 
         try:
-            # Check if already cached to avoid unnecessary download
-            is_cached = _is_silero_vad_cached(self.vad_repo)
+            # Check if already cached to avoid unnecessary download (for github source)
+            is_cached = _is_silero_vad_cached(repo_or_dir) if load_source == "github" else True
 
-            # Only force reload if not cached (downloads specific version if needed)
-            torch.hub.load(
-                repo_or_dir=self.vad_repo,  # Config-driven, not hardcoded
-                model="silero_vad",
-                force_reload=not is_cached,  # Use cache if available
-                onnx=False
-            )
+            # Prepare load arguments
+            load_kwargs = {
+                "repo_or_dir": repo_or_dir,
+                "model": "silero_vad",
+                "force_reload": not is_cached if load_source == "github" else False,
+                "onnx": False
+            }
+
+            if load_source == "local":
+                load_kwargs["source"] = "local"
+                logger.info(f"Using local Silero VAD repository: {repo_or_dir}")
+
+            torch.hub.load(**load_kwargs)
+            
             self._vad_precached = True
-            status = "from cache" if is_cached else "downloaded"
-            logger.debug(f"Successfully loaded VAD from {self.vad_repo} ({status})")
+            status = "from directory" if load_source == "local" else ("from cache" if is_cached else "downloaded")
+            logger.debug(f"Successfully loaded VAD from {repo_or_dir} ({status})")
         except Exception as e:
-            logger.warning(f"Failed to pre-cache Silero VAD: {e}")
+            logger.warning(f"Failed to pre-cache Silero VAD ({load_source}): {e}")
 
     def _derive_model_repo(self, model_name: Optional[str]) -> Optional[str]:
         """Best-effort mapping from faster-whisper size to Hugging Face repo."""
