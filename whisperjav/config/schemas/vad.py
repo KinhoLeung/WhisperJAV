@@ -42,10 +42,6 @@ class SileroVADOptions(BaseConfig):
         ge=0,
         description="Padding around speech segments (milliseconds)."
     )
-    local_path: Optional[str] = Field(
-        default=None,
-        description="Path to local Silero VAD repository to avoid torch.hub download issues."
-    )
 
 
 class FasterWhisperVADOptions(BaseConfig):
