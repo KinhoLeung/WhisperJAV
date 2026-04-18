@@ -1,10 +1,10 @@
 # WhisperJAV
 
 <p align="center">
-  <a href="https://colab.research.google.com/github/meizhong986/WhisperJAV/blob/main/notebook/WhisperJAV_colab_edition_expert.ipynb">
+  <a href="https://colab.research.google.com/github/KinhoLeung/WhisperJAV/blob/main/notebook/WhisperJAV_colab_edition_expert.ipynb">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
   </a>
-  <a href="https://kaggle.com/kernels/welcome?src=https://github.com/meizhong986/WhisperJAV/blob/main/notebook/WhisperJAV_kaggle_parallel_edition.ipynb">
+  <a href="https://kaggle.com/kernels/welcome?src=https://github.com/KinhoLeung/WhisperJAV/blob/main/notebook/WhisperJAV_kaggle_parallel_edition.ipynb">
     <img src="https://kaggle.com/static/images/open-in-kaggle.svg" alt="Open In Kaggle"/>
   </a>
   <a href="https://buymeacoffee.com/meizhong">
@@ -14,7 +14,7 @@
 
 A subtitle generator for Japanese Adult Videos.
 
-**Documentation:** [English](https://meizhong986.github.io/WhisperJAV/) | [简体中文](https://meizhong986.github.io/WhisperJAV/zh/)
+**Documentation:** [English](https://KinhoLeung.github.io/WhisperJAV/) | [简体中文](https://KinhoLeung.github.io/WhisperJAV/zh/)
 
 ---
 
@@ -320,7 +320,7 @@ Whisper sometimes generates repeated text or phrases that weren't spoken. Whispe
 
 The easiest way. No Python knowledge needed.
 
-**Download:** [**Latest Windows Installer**](https://github.com/meizhong986/WhisperJAV/releases/latest)
+**Download:** [**Latest Windows Installer**](https://github.com/KinhoLeung/WhisperJAV/releases/latest)
 
 1. **Download** the `.exe` from the link above
 2. **Run the installer.** No admin rights required. Installs to `%LOCALAPPDATA%\WhisperJAV`.
@@ -342,7 +342,7 @@ For people who manage their own Python environments.
 **Prerequisites:** Python 3.10-3.12, Git, FFmpeg in PATH.
 
 ```batch
-git clone https://github.com/meizhong986/whisperjav.git
+git clone https://github.com/KinhoLeung/whisperjav.git
 cd whisperjav
 
 :: Full automated install (auto-detects GPU)
@@ -371,7 +371,7 @@ brew install python@3.12 ffmpeg portaudio git  # Or python@3.11
 
 **Install:**
 ```bash
-git clone https://github.com/meizhong986/whisperjav.git
+git clone https://github.com/KinhoLeung/whisperjav.git
 cd whisperjav
 
 # Create a virtual environment (required for Homebrew Python)
@@ -416,7 +416,7 @@ For the GUI, you'll also need WebKit2GTK (`libwebkit2gtk-4.0-dev` on Ubuntu, `we
 **2. Install WhisperJAV:**
 
 ```bash
-git clone https://github.com/meizhong986/whisperjav.git
+git clone https://github.com/KinhoLeung/whisperjav.git
 cd whisperjav
 
 # Recommended: use the install script
@@ -440,10 +440,10 @@ For the full walkthrough including Colab/Kaggle setup, headless servers, and sys
 
 Two notebooks are maintained:
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/meizhong986/WhisperJAV/blob/main/notebook/WhisperJAV_colab_edition_expert.ipynb)
-[![Open In Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://kaggle.com/kernels/welcome?src=https://github.com/meizhong986/WhisperJAV/blob/main/notebook/WhisperJAV_kaggle_parallel_edition.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/KinhoLeung/WhisperJAV/blob/main/notebook/WhisperJAV_colab_edition_expert.ipynb)
+[![Open In Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://kaggle.com/kernels/welcome?src=https://github.com/KinhoLeung/WhisperJAV/blob/main/notebook/WhisperJAV_kaggle_parallel_edition.ipynb)
 
-If you run into issues, please open a [GitHub issue](https://github.com/meizhong986/WhisperJAV/issues) with your system info, the console log, and the error output.
+If you run into issues, please open a [GitHub issue](https://github.com/KinhoLeung/WhisperJAV/issues) with your system info, the console log, and the error output.
 
 ---
 
@@ -457,19 +457,19 @@ WhisperJAV supports modular extras. Install only what you need:
 
 ```bash
 # Core only (minimal)
-pip install git+https://github.com/meizhong986/whisperjav.git
+pip install git+https://github.com/KinhoLeung/whisperjav.git
 
 # CLI with audio processing
-pip install "whisperjav[cli] @ git+https://github.com/meizhong986/whisperjav.git"
+pip install "whisperjav[cli] @ git+https://github.com/KinhoLeung/whisperjav.git"
 
 # GUI support
-pip install "whisperjav[gui] @ git+https://github.com/meizhong986/whisperjav.git"
+pip install "whisperjav[gui] @ git+https://github.com/KinhoLeung/whisperjav.git"
 
 # Translation support
-pip install "whisperjav[translate] @ git+https://github.com/meizhong986/whisperjav.git"
+pip install "whisperjav[translate] @ git+https://github.com/KinhoLeung/whisperjav.git"
 
 # Everything
-pip install "whisperjav[all] @ git+https://github.com/meizhong986/whisperjav.git"
+pip install "whisperjav[all] @ git+https://github.com/KinhoLeung/whisperjav.git"
 ```
 
 **Available extras:**
@@ -509,7 +509,7 @@ pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
 For contributing or modifying the code:
 
 ```bash
-git clone https://github.com/meizhong986/whisperjav.git
+git clone https://github.com/KinhoLeung/whisperjav.git
 cd whisperjav
 
 # Install in editable mode with dev dependencies
@@ -522,7 +522,7 @@ python -m pytest tests/
 #### Windows Source Installation
 
 ```batch
-git clone https://github.com/meizhong986/whisperjav.git
+git clone https://github.com/KinhoLeung/whisperjav.git
 cd whisperjav
 
 :: Standard install
@@ -624,7 +624,7 @@ Remove-Item -Recurse -Force "$env:USERPROFILE\.cache\huggingface\hub\models--Sys
 Contributions welcome. See `CONTRIBUTING.md` for guidelines.
 
 ```bash
-git clone https://github.com/meizhong986/whisperjav.git
+git clone https://github.com/KinhoLeung/whisperjav.git
 cd whisperjav
 pip install -e ".[dev]"
 python -m pytest tests/
